@@ -8,6 +8,12 @@ router.post('/', authenticateUser(), gamePlayControllers.recordGamePlay);
 
 router.get('/', authenticateUser(), gamePlayControllers.getGamePlays);
 
+router.get(
+  '/leader-board',
+  authenticateUser(),
+  gamePlayControllers.getGameLeaderBoard
+);
+
 router.get('/:gamePlayId', authenticateUser(), gamePlayControllers.getGamePlay);
 
 export default router;

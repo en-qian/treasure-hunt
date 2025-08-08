@@ -49,3 +49,23 @@ export interface GetGamePlay extends BaseApi {
     createdAt: string;
   };
 }
+
+export interface GetGameLeaderBoard extends BaseApi {
+  Method: 'GET';
+  Route: '/api/user/game-plays/leader-board';
+  ReqParams: {};
+  ReqQuery: {};
+  ReqBody: {};
+  ResBody: {
+    gamePlays: {
+      gamePlayId: string;
+      result: GameResultCategory;
+      user: {
+        userId: string;
+        userName: string;
+      };
+      score: number;
+      createdAt: string;
+    }[];
+  };
+}

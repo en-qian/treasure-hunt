@@ -133,3 +133,28 @@ export const getGamePlay = createController<UserWebApi.GetGamePlay>(
     };
   }
 );
+
+export const getGameLeaderBoard =
+  createController<UserWebApi.GetGameLeaderBoard>(async (req, res) => {
+    const gamePlays = await gamePlayModel.getGameLeaderBoard()();
+
+    return {
+      data: {
+        gamePlays: gamePlays.map(gamePlay => ({
+          gamePlayId: gamePlay.gamePlayId,
+          result:
+            gamePlay.endReason === 'treasure_found'
+              ? 'win'
+              : gamePlay.endReason === 'trap_stepping'
+              ? 'trapped'
+              : 'lost',
+          score: gamePlay.score,
+          user: {
+            userId: gamePlay.userId,
+            userName: `${gamePlay.firstName} ${gamePlay.lastName}`,
+          },
+          createdAt: gamePlay.createdAt.toISOString(),
+        })),
+      },
+    };
+  });
