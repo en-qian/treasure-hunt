@@ -23,7 +23,7 @@ export interface GetGamePlays extends BaseApi {
   ReqQuery: { limit?: string; offset?: string };
   ReqBody: {};
   ResBody: {
-    gameRecords: {
+    gamePlays: {
       gamePlayId: string;
       result: GameResultCategory;
       score: number;

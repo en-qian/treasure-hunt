@@ -1,10 +1,5 @@
-import * as userModel from '@models/users';
 import * as gamePlayModel from '@models/game-plays';
 import * as v from '@utils/validators';
-import * as passwordUtils from '@utils/password';
-import * as sessionUtils from '@utils/sessions';
-import * as usersModel from '@models/users';
-import * as sessionsModel from '@models/sessions';
 import { UserWebApi } from '@web-api';
 import { createController } from '@utils/controllers';
 import { ErrorResponse } from '@utils/error-handler';
@@ -59,5 +54,82 @@ export const recordGamePlay = createController<UserWebApi.RecordGamePlay>(
     });
 
     return { data: { gamePlayId } };
+  }
+);
+
+export const getGamePlays = createController<UserWebApi.GetGamePlays>(
+  async (req, res) => {
+    const { limit, offset } = req.query;
+
+    const numberLimit = limit !== undefined ? Number(limit) : undefined;
+    const numberOffset = offset !== undefined ? Number(offset) : undefined;
+
+    if (
+      numberLimit !== undefined &&
+      !v.isNumber(numberLimit) &&
+      !v.isInteger(numberLimit)
+    ) {
+      throw new ErrorResponse('INVALID_PARAMS', 'Invalid limit');
+    }
+
+    if (
+      numberOffset !== undefined &&
+      !v.isNumber(numberOffset) &&
+      !v.isInteger(numberOffset)
+    ) {
+      throw new ErrorResponse('INVALID_PARAMS', 'Invalid offset');
+    }
+
+    const gamePlays = await gamePlayModel.getGamePlays()({
+      limit: numberLimit,
+      offset: numberOffset,
+      userId: req.userId,
+    });
+
+    return {
+      data: {
+        gamePlays: gamePlays.map(gamePlay => ({
+          gamePlayId: gamePlay.gamePlayId,
+          result:
+            gamePlay.endReason === 'treasure_found'
+              ? 'win'
+              : gamePlay.endReason === 'trap_stepping'
+              ? 'trapped'
+              : 'lost',
+          score: gamePlay.score,
+          finalPosition: gamePlay.moves[gamePlay.moves.length - 1]!,
+          createdAt: gamePlay.createdAt.toISOString(),
+        })),
+      },
+    };
+  }
+);
+
+export const getGamePlay = createController<UserWebApi.GetGamePlay>(
+  async (req, res) => {
+    const { gamePlayId } = req.params;
+
+    const gamePlay = await gamePlayModel.getGamePlay()(gamePlayId);
+
+    if (!gamePlay) {
+      throw new ErrorResponse('NOT_FOUND', 'Game play not found');
+    }
+
+    return {
+      data: {
+        result:
+          gamePlay.endReason === 'treasure_found'
+            ? 'win'
+            : gamePlay.endReason === 'trap_stepping'
+            ? 'trapped'
+            : 'lost',
+        score: gamePlay.score,
+        finalPosition: gamePlay.moves[gamePlay.moves.length - 1]!,
+        moves: gamePlay.moves,
+        totalMoves: gamePlay.moves.length,
+        treasureLocation: gamePlay.treasureLocation,
+        createdAt: gamePlay.createdAt.toISOString(),
+      },
+    };
   }
 );
