@@ -97,3 +97,32 @@ export const getGamePlay =
       updatedAt: gamePlay.updated_at,
     };
   };
+
+export const getGameLeaderBoard =
+  (query = dbQuery) =>
+  async () => {
+    const { runQuery } = getSelectQuery('game_plays').select(
+      '*',
+      {},
+      {
+        limit: 10,
+        offset: 0,
+        orderBy: 'DESC',
+        sortBy: 'game_plays.score',
+      }
+    );
+
+    const gamePlays = await runQuery(query);
+
+    return gamePlays.map(gamePlay => ({
+      id: gamePlay.id,
+      gamePlayId: gamePlay.game_play_id,
+      userId: gamePlay.game_play_id,
+      treasureLocation: gamePlay.treasure_location,
+      endReason: gamePlay.end_reason,
+      moves: JSON.parse(gamePlay.moves) as string[],
+      score: gamePlay.score,
+      createdAt: gamePlay.created_at,
+      updatedAt: gamePlay.updated_at,
+    }));
+  };
